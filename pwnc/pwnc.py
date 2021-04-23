@@ -9,7 +9,8 @@ def query(requested_symbols : list, known_symbols : dict):
     This function uses the libc.rip api to attempt to find libc symbols based
     on leaked addresses.
 
-    @known_symbols: dict of symbol names (strings) mapped to addresses (int)
+    @known_symbols: dict of symbol names (strings) mapped to addresses (strings)
+    @request_symbols: list of requested symbols (strings)
 
     @returns: a dictionary of requested symbols (strings) mappped to their
     addresses (int). If things go wrong an exception will be raised
@@ -30,7 +31,7 @@ def _query_build_id(symbols : dict):
     (strings) mappped to addresses (int). It attempts to determine the "id" of
     a libc based on known addresses.
 
-    @symbols: dictionary of symbol names (strings) mapped to addresses(int)
+    @symbols: dictionary of symbol names (strings) mapped to addresses (strings)
 
     @returns: a build ID (string) that can be used too query symbol addresses.
     If things go wrong this function raises an execption.
@@ -61,8 +62,8 @@ def _query_symbols(desired_symbols : list, buildid : str):
     @desired_symbols: list of strings. Each is a libc symbol
     @build: string id of the libc to query
 
-    @returns: a dictionary of symbols (strings) mappped to their addresses (int)
-    If things go wrong an exception will be raised
+    @returns: a dictionary of symbols (strings) mappped to their addresses
+    (strings) If things go wrong an exception will be raised
     """
     with urllib3.PoolManager() as http:
     
