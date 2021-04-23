@@ -22,5 +22,10 @@ class TestMain(unittest.TestCase):
         self.assertEqual(results['strcat'], "0x9d800")
         self.assertEqual(results['system'], "0x4f4e0")
 
+    def test_valid_libc_download(self):
+        symbols = {"strncpy": "0xdb0", "strcat": "0xd800"}
+        libc = pwnc.get_libc(symbols)
+        self.assertIn(b"__libc_start_main", libc)
+
 if __name__ == "__main__":
     unittest.main()

@@ -4,6 +4,25 @@ import json
 LIBC_RIP_FIND = "https://libc.rip/api/find"
 LIBC_RIP_LIBC = "https://libc.rip/api/libc/"
 
+def get_libc(known_symbols : dict):
+    """
+    This function will use the libc.rip api to download a libc based on
+    addresses of leaked symbols.
+
+    @known_symbols: dictionary of symbol names (strings) mapped to their
+    addresses (strings)
+
+    @returns: a libc binary as a string of bytes
+    """
+    download_url = _query_download_url(known_symbols)
+
+    libc = None
+    with urllib3.PoolManager() as http:
+        r = http.request("GET", download_url)
+        libc = r.data
+
+    return libc
+
 def query(requested_symbols : list, known_symbols : dict):
     """
     This function uses the libc.rip api to attempt to find libc symbols based
@@ -27,14 +46,35 @@ def query(requested_symbols : list, known_symbols : dict):
 
 def _query_build_id(symbols : dict):
     """
-    This function querys https://libc.rip/api/find with a dictionary of symbols
-    (strings) mappped to addresses (int). It attempts to determine the "id" of
-    a libc based on known addresses.
+    This funcion returns the 'id' value from an API find call
 
     @symbols: dictionary of symbol names (strings) mapped to addresses (strings)
 
     @returns: a build ID (string) that can be used too query symbol addresses.
     If things go wrong this function raises an execption.
+    """
+    return _query(symbols, "id")
+
+def _query_download_url(symbols : dict):
+    """
+    This funcion returns the 'download_url' value from an API find call
+
+    @symbols: dictionary of symbol names (strings) mapped to addresses (strings)
+
+    @returns: a download url (string) where the libc can be downloaded
+    """
+    return _query(symbols, "download_url")
+
+def _query(symbols : dict, desired_value : str):
+    """
+    This function querys https://libc.rip/api/find with a dictionary of symbols
+    (strings) mappped to addresses (int). It returns the desired_value from the
+    resulting json object
+
+    @symbols: dictionary of symbol names (strings) mapped to addresses (strings)
+
+    @returns: the values assocaited with the desired_value key passed to this
+    function
     """
     with urllib3.PoolManager() as http:
 
@@ -52,7 +92,7 @@ def _query_build_id(symbols : dict):
         # parse the response
         parsed = json.loads(response.data.decode('utf-8'))
 
-    return parsed[0]['id']
+    return parsed[0][desired_value]
 
 def _query_symbols(desired_symbols : list, buildid : str):
     """
