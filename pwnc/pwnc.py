@@ -10,11 +10,14 @@ def get_libc(known_symbols : dict):
     addresses of leaked symbols.
 
     @known_symbols: dictionary of symbol names (strings) mapped to their
-    addresses (strings)
+    addresses (strings or integers)
 
     @returns: a libc binary as a string of bytes
     """
-    download_url = _query_download_url(known_symbols)
+    # takes a dictionary either {str:int} or {str:str} and returns a {str:str}
+    normalized_symbols = _normalize_symbols(known_symbols)
+
+    download_url = _query_download_url(normalized_symbols)
 
     libc = None
     with urllib3.PoolManager() as http:
@@ -28,14 +31,15 @@ def query(requested_symbols : list, known_symbols : dict):
     This function uses the libc.rip api to attempt to find libc symbols based
     on leaked addresses.
 
-    @known_symbols: dict of symbol names (strings) mapped to addresses (strings)
+    @known_symbols: dict of symbol names (strings) mapped to addresses (strings
+    or integers)
     @request_symbols: list of requested symbols (strings)
 
     @returns: a dictionary of requested symbols (strings) mappped to their
     addresses (int). If things go wrong an exception will be raised
     """
     results = {}
-    
+
     # first get the buildid
     buildid = _query_build_id(known_symbols)
 
@@ -43,6 +47,41 @@ def query(requested_symbols : list, known_symbols : dict):
     results = _query_symbols(requested_symbols, buildid)
 
     return results
+
+def _normalize_symbols(symbols : dict):
+    """
+    This function takes a dictionary of strings mapped to integers or a dict of
+    strings mapped to strings and returns a dictionary of strings mapped to
+    strings.
+
+    @symbols: dict of strings mapped to integers or strings mapped to strings
+
+    @returns: dict of strings mapped to strings
+    """
+    normalized_symbols = {}
+    for key, val in symbols.items():
+        if(isinstance(val, int)):
+            val = hex(val)
+        normalized_symbols[key] = val
+    print(normalized_symbols)
+    return normalized_symbols
+
+def _reverse_normalize_symbols(symbols : dict):
+    """
+    This function takes a dictionary of strings mapped to integers or a dict of
+    strings mapped to strings and returns a dictionary of strings mapped to
+    integers.
+
+    @symbols: dict of strings mapped to integers or strings mapped to strings
+
+    @returns: dict of strings mapped to integers.
+    """
+    reversed_symbols = {}
+    for key, val in symbols.items():
+        if(isinstance(val, str)):
+            val = int(val, 16)
+        reversed_symbols[key] = val
+    return reversed_symbols
 
 def _query_build_id(symbols : dict):
     """
@@ -59,7 +98,8 @@ def _query_download_url(symbols : dict):
     """
     This funcion returns the 'download_url' value from an API find call
 
-    @symbols: dictionary of symbol names (strings) mapped to addresses (strings)
+    @symbols: dictionary of symbol names (strings) mapped to addresses (strings
+    or integers)
 
     @returns: a download url (string) where the libc can be downloaded
     """
@@ -71,15 +111,20 @@ def _query(symbols : dict, desired_value : str):
     (strings) mappped to addresses (int). It returns the desired_value from the
     resulting json object
 
-    @symbols: dictionary of symbol names (strings) mapped to addresses (strings)
+    @symbols: dictionary of symbol names (strings) mapped to addresses (strings
+    or integers)
 
     @returns: the values assocaited with the desired_value key passed to this
     function
     """
+
+    # make sure the dictionary passed to us is good
+    normalized_symbols = _normalize_symbols(symbols)
+
     with urllib3.PoolManager() as http:
 
         # build the POST request and send it
-        encoded_body = json.dumps({'symbols': symbols})
+        encoded_body = json.dumps({'symbols': normalized_symbols})
         response = http.request(
             'POST',
             LIBC_RIP_FIND,
@@ -91,20 +136,21 @@ def _query(symbols : dict, desired_value : str):
 
         # parse the response
         parsed = json.loads(response.data.decode('utf-8'))
-
+   
     return parsed[0][desired_value]
 
 def _query_symbols(desired_symbols : list, buildid : str):
     """
     This function querys https://libc.rip/api/libc/<buildid> with a list of
-    symbols (strings).
+    symbols (strings) and a buildid.
 
     @desired_symbols: list of strings. Each is a libc symbol
     @build: string id of the libc to query
 
     @returns: a dictionary of symbols (strings) mappped to their addresses
-    (strings) If things go wrong an exception will be raised
+    (integers) If things go wrong an exception will be raised
     """
+
     with urllib3.PoolManager() as http:
     
         encoded_body = json.dumps({'symbols': desired_symbols})
@@ -119,4 +165,4 @@ def _query_symbols(desired_symbols : list, buildid : str):
 
         parsed = json.loads(response.data.decode('utf-8'))
 
-    return parsed['symbols']
+    return _reverse_normalize_symbols(parsed['symbols'])
