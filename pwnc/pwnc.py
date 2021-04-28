@@ -1,9 +1,24 @@
-import urllib3
-import json
-from exceptions import *
+"""
+This file contains all publicly exposed methods within pwnc. The private methods
+are contained in all other files within this repository.
 
-LIBC_RIP_FIND = "https://libc.rip/api/find"
-LIBC_RIP_LIBC = "https://libc.rip/api/libc/"
+The publicly exposed calls are:
+
+get_libc           -- provide known symbols and their addresses and receive the
+                      related libc as a byte string.
+
+query              -- provide requested symbol names and known symbol names 
+                      mapped to their addresses. Receive a dictionary of 
+                      requested symbols mappped to their addresses.
+
+query_buildid      -- provide known symbols mapped to their addresses and
+                      receive the related libc buildid.
+
+query_download_url -- provide known symbols mapped to their addresses and
+                      receive the download url for the related libc.
+"""
+
+from pwnc_urllib3 import _get_libc, _query, _query_symbols
 
 def get_libc(known_symbols : dict):
     """
@@ -15,17 +30,8 @@ def get_libc(known_symbols : dict):
 
     @returns: a libc binary as a string of bytes
     """
-    # takes a dictionary either {str:int} or {str:str} and returns a {str:str}
-    normalized_symbols = _normalize_symbols(known_symbols)
-
-    download_url = _query_download_url(normalized_symbols)
-
-    libc = None
-    with urllib3.PoolManager() as http:
-        r = http.request("GET", download_url)
-        libc = r.data
-
-    return libc
+    # TODO: This function needs to take a buildid as well
+    return _get_libc(known_symbols)
 
 def query(requested_symbols : list, known_symbols : dict):
     """
@@ -39,62 +45,29 @@ def query(requested_symbols : list, known_symbols : dict):
     @returns: a dictionary of requested symbols (strings) mappped to their
     addresses (int). If things go wrong an exception will be raised
     """
-    results = {}
+    #TODO: This method must validate that the requested symbols  exist in the
+    #      dictionary.
+    #TODO: This function must take a buildid as well
 
     # first get the buildid
-    buildid = _query_build_id(known_symbols)
+    buildid = query_build_id(known_symbols)
 
     # now get the desired symbols based on the buildid
-    results = _query_symbols(requested_symbols, buildid)
+    return _query_symbols(requested_symbols, buildid)
 
-    return results
-
-def _normalize_symbols(symbols : dict):
+def query_build_id(symbols : dict):
     """
-    This function takes a dictionary of strings mapped to integers or a dict of
-    strings mapped to strings and returns a dictionary of strings mapped to
-    strings.
+    This funcion returns the 'id' (libc buildid) value from an API find call
 
-    @symbols: dict of strings mapped to integers or strings mapped to strings
-
-    @returns: dict of strings mapped to strings
-    """
-    normalized_symbols = {}
-    for key, val in symbols.items():
-        if(isinstance(val, int)):
-            val = hex(val)
-        normalized_symbols[key] = val
-    return normalized_symbols
-
-def _reverse_normalize_symbols(symbols : dict):
-    """
-    This function takes a dictionary of strings mapped to integers or a dict of
-    strings mapped to strings and returns a dictionary of strings mapped to
-    integers.
-
-    @symbols: dict of strings mapped to integers or strings mapped to strings
-
-    @returns: dict of strings mapped to integers.
-    """
-    reversed_symbols = {}
-    for key, val in symbols.items():
-        if(isinstance(val, str)):
-            val = int(val, 16)
-        reversed_symbols[key] = val
-    return reversed_symbols
-
-def _query_build_id(symbols : dict):
-    """
-    This funcion returns the 'id' value from an API find call
-
-    @symbols: dictionary of symbol names (strings) mapped to addresses (strings)
+    @symbols: dictionary of symbol names (strings) mapped to addresses (strings
+    or integers)
 
     @returns: a build ID (string) that can be used too query symbol addresses.
     If things go wrong this function raises an execption.
     """
     return _query(symbols, "id")
 
-def _query_download_url(symbols : dict):
+def query_download_url(symbols : dict):
     """
     This funcion returns the 'download_url' value from an API find call
 
@@ -103,78 +76,6 @@ def _query_download_url(symbols : dict):
 
     @returns: a download url (string) where the libc can be downloaded
     """
+    # TODO: this function needs to be able to take a buildid as well
     return _query(symbols, "download_url")
 
-def _query(symbols : dict, desired_value : str):
-    """
-    This function querys https://libc.rip/api/find with a dictionary of symbols
-    (strings) mappped to addresses (int). It returns the desired_value from the
-    resulting json object
-
-    @symbols: dictionary of symbol names (strings) mapped to addresses (strings
-    or integers)
-
-    @returns: the values assocaited with the desired_value key passed to this
-    function
-    """
-
-    # make sure the dictionary passed to us is good
-    normalized_symbols = _normalize_symbols(symbols)
-
-    with urllib3.PoolManager() as http:
-
-        # build the POST request and send it
-        encoded_body = json.dumps({'symbols': normalized_symbols})
-        response = http.request(
-            'POST',
-            LIBC_RIP_FIND,
-            body = encoded_body,
-            headers = {
-                "Content-Type": "application/json"
-            }
-        )
-
-        # parse the response
-        parsed = json.loads(response.data.decode('utf-8'))
-  
-    try:
-        results = parsed[0][desired_value]
-    except Exception as e:
-        raise PWNCResponseError(
-            f'Bad response from attempted query for {desired_value}. Response: {parsed}')
-    
-    return results
-
-def _query_symbols(desired_symbols : list, buildid : str):
-    """
-    This function querys https://libc.rip/api/libc/<buildid> with a list of
-    symbols (strings) and a buildid.
-
-    @desired_symbols: list of strings. Each is a libc symbol
-    @build: string id of the libc to query
-
-    @returns: a dictionary of symbols (strings) mappped to their addresses
-    (integers) If things go wrong an exception will be raised
-    """
-
-    with urllib3.PoolManager() as http:
-    
-        encoded_body = json.dumps({'symbols': desired_symbols})
-        response = http.request(
-            'POST',
-            f"{LIBC_RIP_LIBC}{buildid}",
-            body = encoded_body,
-            headers = {
-                "Content-Type": "application/json"
-            }
-        )
-
-    parsed = json.loads(response.data.decode('utf-8'))
-    
-    try:
-        results = _reverse_normalize_symbols(parsed['symbols'])
-    except Exception as e:
-        raise PWNCResponseError(
-            f'Bad response from attempted symbol query: {parsed}')
-
-    return results

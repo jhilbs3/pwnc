@@ -1,28 +1,28 @@
 import unittest
 import pwnc
-from exceptions import *
+from pwnc_exceptions import *
 
 class TestMain(unittest.TestCase):
     
     def test_valid_symbols(self):
         symbols = {"strncpy": "0xdb0", "strcat": "0xd800"}
-        self.assertEqual(pwnc._query_build_id(symbols), 
+        self.assertEqual(pwnc.query_build_id(symbols), 
                          "libc6_2.27-3ubuntu1.2_amd64")
     
     def test_valid_symbols_integers(self):
         symbols = {"strncpy": 0xdb0, "strcat": 0xd800}
-        self.assertEqual(pwnc._query_build_id(symbols), 
+        self.assertEqual(pwnc.query_build_id(symbols), 
                          "libc6_2.27-3ubuntu1.2_amd64")
 
     def test_valid_symbols_mixed(self):
         symbols = {"strncpy": "0xdb0", "strcat": 0xd800}
-        self.assertEqual(pwnc._query_build_id(symbols), 
+        self.assertEqual(pwnc.query_build_id(symbols), 
                          "libc6_2.27-3ubuntu1.2_amd64")
 
     def test_valid_buildid(self):
         symbols = ["system", "strcat"]
         buildid = "libc6_2.27-3ubuntu1.2_amd64"
-        results = pwnc._query_symbols(symbols, buildid)
+        results = pwnc.query(symbols, buildid=buildid)
         self.assertEqual(results['strcat'], 0x9d800)
         self.assertEqual(results['system'], 0x4f4e0)
 
