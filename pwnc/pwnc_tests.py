@@ -1,5 +1,6 @@
 import unittest
 import pwnc
+from exceptions import *
 
 class TestMain(unittest.TestCase):
     
@@ -41,6 +42,10 @@ class TestMain(unittest.TestCase):
         symbols = {"strncpy": 0xdb0, "strcat": 0xd800}
         libc = pwnc.get_libc(symbols)
         self.assertIn(b"__libc_start_main", libc)
+
+    def test_invalid_libc_download(self):
+        symbols = {"gross": "0"}
+        self.assertRaises(PWNCResponseError, pwnc.get_libc, symbols)
 
 if __name__ == "__main__":
     unittest.main()

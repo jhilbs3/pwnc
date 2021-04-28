@@ -1,5 +1,6 @@
 import urllib3
 import json
+from exceptions import *
 
 LIBC_RIP_FIND = "https://libc.rip/api/find"
 LIBC_RIP_LIBC = "https://libc.rip/api/libc/"
@@ -63,7 +64,6 @@ def _normalize_symbols(symbols : dict):
         if(isinstance(val, int)):
             val = hex(val)
         normalized_symbols[key] = val
-    print(normalized_symbols)
     return normalized_symbols
 
 def _reverse_normalize_symbols(symbols : dict):
@@ -136,8 +136,14 @@ def _query(symbols : dict, desired_value : str):
 
         # parse the response
         parsed = json.loads(response.data.decode('utf-8'))
-   
-    return parsed[0][desired_value]
+  
+    try:
+        results = parsed[0][desired_value]
+    except Exception as e:
+        raise PWNCResponseError(
+            f'Bad response from attempted query for {desired_value}. Response: {parsed}')
+    
+    return results
 
 def _query_symbols(desired_symbols : list, buildid : str):
     """
@@ -163,6 +169,12 @@ def _query_symbols(desired_symbols : list, buildid : str):
             }
         )
 
-        parsed = json.loads(response.data.decode('utf-8'))
+    parsed = json.loads(response.data.decode('utf-8'))
+    
+    try:
+        results = _reverse_normalize_symbols(parsed['symbols'])
+    except Exception as e:
+        raise PWNCResponseError(
+            f'Bad response from attempted symbol query: {parsed}')
 
-    return _reverse_normalize_symbols(parsed['symbols'])
+    return results
