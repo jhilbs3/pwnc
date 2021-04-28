@@ -20,9 +20,9 @@ class TestMain(unittest.TestCase):
                          "libc6_2.27-3ubuntu1.2_amd64")
 
     def test_valid_buildid(self):
-        symbols = ["system", "strcat"]
+        desired_symbols = ["system", "strcat"]
         buildid = "libc6_2.27-3ubuntu1.2_amd64"
-        results = pwnc.query(symbols, buildid=buildid)
+        results = pwnc.query(desired_symbols, buildid=buildid)
         self.assertEqual(results['strcat'], 0x9d800)
         self.assertEqual(results['system'], 0x4f4e0)
 
