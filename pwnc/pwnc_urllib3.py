@@ -5,7 +5,9 @@ This file contains all pwnc methods that make urllib3 calls.
 import urllib3
 import json
 from typing import Mapping, List
-from pwnc_exceptions import PWNCResponseError, PWNCArgumentError
+from pwnc_exceptions import (PWNCResponseError,
+                             PWNCArgumentError,
+                             PWNCSymbolError)
 from pwnc_helpers import _normalize_symbols, _reverse_normalize_symbols
 
 LIBC_RIP_FIND = "https://libc.rip/api/find"
@@ -104,7 +106,14 @@ def _query_symbols(desired_symbols: List[str],
 
     try:
         parsed = json.loads(response.data.decode('utf-8'))
-        return _reverse_normalize_symbols(parsed['symbols'])
+        discovered_symbols = _reverse_normalize_symbols(parsed['symbols'])
     except Exception:
         raise PWNCResponseError(
             f'Bad response from attempted symbol query: {parsed}')
+
+    # make sure all requested symbols exist in discovered_symbols
+    for symbol in desired_symbols:
+        if(symbol not in discovered_symbols):
+            raise PWNCSymbolError(f'Requested symbol {symbol} not found')
+
+    return discovered_symbols

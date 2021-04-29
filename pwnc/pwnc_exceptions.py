@@ -20,3 +20,9 @@ class PWNCArgumentError(PWNCException):
     """ Raised when an arg is the wrong type or too few args were passed """
 
     pass
+
+
+class PWNCSymbolError(PWNCException):
+    """ Raised when a symbol is not found or otherwise unexpected """
+
+    pass

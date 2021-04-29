@@ -29,10 +29,7 @@ def query(requested_symbols: List[str],
     to integers.
     """
 
-    # TODO: This method must validate that the requested symbols  exist in the
-    #      dictionary.
-
-    # first get the buildid
+    # get the buildid if needed
     if(buildid == ""):
         buildid = query_build_id(known_symbols)
 

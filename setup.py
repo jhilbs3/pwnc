@@ -29,12 +29,11 @@ setup(
     license='GPL-3.0',
     install_requires=['urllib3', 'json', 'typing'],
     packages=find_packages(exclude=['tests', '*.tests', '*.tests.*']),
-    include_package_data=True,
+    include_package_data=False,
     classifiers=[
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.8',
         'Topic :: Utilities',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)'
     ]
 )
-

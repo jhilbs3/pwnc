@@ -2,7 +2,7 @@ import unittest
 import pwnc
 from pwnc_exceptions import *
 
-class TestMain(unittest.TestCase):
+class TestPWNC(unittest.TestCase):
     
     def test_valid_symbols(self):
         symbols = {"strncpy": "0xdb0", "strcat": "0xd800"}
