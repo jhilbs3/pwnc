@@ -1,10 +1,9 @@
+from typing import Mapping, List, Union
 
-from typing import Mapping, List
-
-from pwnc_urllib3 import _get_libc, _query, _query_symbols
+from .pwnc_urllib3 import _get_libc, _query, _query_symbols
 
 
-def get_libc(known_symbols: Mapping[str, any] = {},
+def get_libc(known_symbols: Mapping[str, Union[str, int]] = {},
              buildid: str = "") -> bytes:
     """download libc by providing known symbols or a buildid
 
@@ -17,7 +16,7 @@ def get_libc(known_symbols: Mapping[str, any] = {},
 
 
 def query(requested_symbols: List[str],
-          known_symbols: Mapping[str, any] = {},
+          known_symbols: Mapping[str, Union[str, int]] = {},
           buildid: str = "") -> Mapping[str, int]:
     """retrieve symbol addresses based on other known symbols or a buildid
 
@@ -37,7 +36,7 @@ def query(requested_symbols: List[str],
     return _query_symbols(requested_symbols, buildid)
 
 
-def query_build_id(symbols: Mapping[str, any]) -> str:
+def query_build_id(symbols: Mapping[str, Union[str, int]]) -> str:
     """retrieve the buildid of a libc based on symbol addresses
 
     Uses the libc.rip api to retrieve the buildid of a given libc based on
@@ -48,7 +47,8 @@ def query_build_id(symbols: Mapping[str, any]) -> str:
     return _query("id", symbols=symbols)
 
 
-def query_download_url(symbols: Mapping[str, any], buildid: str = "") -> str:
+def query_download_url(symbols: Mapping[str, Union[str, int]], 
+                       buildid: str = "") -> str:
     """retrieve the download url of a libc based on symbol addresses or buildid
 
     Uses the libc.rip api to retrieve a download url of a given libc based on

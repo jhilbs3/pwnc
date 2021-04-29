@@ -4,17 +4,19 @@ This file contains all pwnc methods that make urllib3 calls.
 
 import urllib3
 import json
-from typing import Mapping, List
-from pwnc_exceptions import (PWNCResponseError,
+from typing import Mapping, List, Union
+from .pwnc_exceptions import (PWNCResponseError,
                              PWNCArgumentError,
                              PWNCSymbolError)
-from pwnc_helpers import _normalize_symbols, _reverse_normalize_symbols
+from .pwnc_helpers import (_normalize_symbols, 
+                           _reverse_normalize_symbols,
+                           _check_dictionary_types)
 
 LIBC_RIP_FIND = "https://libc.rip/api/find"
 LIBC_RIP_LIBC = "https://libc.rip/api/libc/"
 
 
-def _get_libc(known_symbols: Mapping[str, any] = {},
+def _get_libc(known_symbols: Mapping[str, Union[str, int]] = {},
               buildid: str = "") -> bytes:
     """ download a given libc based on symbols or buildid
 
@@ -23,9 +25,11 @@ def _get_libc(known_symbols: Mapping[str, any] = {},
     integers
     """
 
-    # raise an exception if we aren't provided one ofof the arguments
+    # raise an exception if we aren't provided one of the arguments
     if(len(known_symbols) == 0 and len(buildid) == 0):
         raise PWNCArgumentError('buildid or symbol required')
+
+    _check_dictionary_types(known_symbols, [str], [str, int])
 
     # takes a dictionary either {str:int} or {str:str} and returns a {str:str}
     normalized_symbols = _normalize_symbols(known_symbols)
@@ -46,7 +50,7 @@ def _get_libc(known_symbols: Mapping[str, any] = {},
 
 
 def _query(desired_value: str,
-           symbols: Mapping[str, int] = {},
+           symbols: Mapping[str, Union[str, int]] = {},
            buildid: str = "") -> any:
     """ retrieve symbol addresses based on symbols or buildid
 
@@ -58,6 +62,8 @@ def _query(desired_value: str,
     # raise an exception if we aren't provided one ofof the arguments
     if(len(symbols) == 0 and len(buildid) == 0):
         raise PWNCArgumentError('buildid or symbol required')
+    
+    _check_dictionary_types(symbols, [str], [str, int])
 
     # make sure the dictionary passed to us is good
     normalized_symbols = _normalize_symbols(symbols)
