@@ -7,15 +7,8 @@ from pwnc_exceptions import PWNCTypeError
 
 
 def _normalize_symbols(symbols: Mapping[str, any]) -> Mapping[str, str]:
-    """
-    This function takes a dictionary of strings mapped to integers or a dict of
-    strings mapped to strings and returns a dictionary of strings mapped to
-    strings.
+    """ converts a dict of [str, any] to [str, str] """
 
-    @symbols: dict of strings mapped to integers or strings mapped to strings
-
-    @returns: dict of strings mapped to strings
-    """
     normalized_symbols = {}
     for key, val in symbols.items():
         if(isinstance(val, int)):
@@ -30,15 +23,8 @@ def _normalize_symbols(symbols: Mapping[str, any]) -> Mapping[str, str]:
 
 def _reverse_normalize_symbols(
                         symbols: Mapping[str, any]) -> Mapping[str, int]:
-    """
-    This function takes a dictionary of strings mapped to integers or a dict of
-    strings mapped to strings and returns a dictionary of strings mapped to
-    integers.
+    """ converts a dict of [str, any] to [str, int]"""
 
-    @symbols: dict of strings mapped to integers or strings mapped to strings
-
-    @returns: dict of strings mapped to integers.
-    """
     reversed_symbols = {}
     for key, val in symbols.items():
         if(isinstance(val, str)):

@@ -1,22 +1,3 @@
-"""
-This file contains all publicly exposed methods within pwnc. The private
-methods are contained in all other files within this repository.
-
-The publicly exposed calls are:
-
-get_libc           -- provide known symbols and their addresses and receive the
-                      related libc as a byte string.
-
-query              -- provide requested symbol names and known symbol names
-                      mapped to their addresses. Receive a dictionary of
-                      requested symbols mappped to their addresses.
-
-query_buildid      -- provide known symbols mapped to their addresses and
-                      receive the related libc buildid.
-
-query_download_url -- provide known symbols mapped to their addresses and
-                      receive the download url for the related libc.
-"""
 
 from typing import Mapping, List
 
@@ -25,32 +6,29 @@ from pwnc_urllib3 import _get_libc, _query, _query_symbols
 
 def get_libc(known_symbols: Mapping[str, any] = {},
              buildid: str = "") -> bytes:
-    """
-    This function will use the libc.rip api to download a libc based on
-    addresses of leaked symbols.
+    """download libc by providing known symbols or a buildid
 
-    @known_symbols: dictionary of symbol names (strings) mapped to their
-    addresses (strings or integers)
-
-    @returns: a libc binary as a string of bytes
+    Uses the libc.rip api to download a libc based on addresses of leaked
+    symbols or a provided buildid. Symbols can be a dictionary of strings
+    mapped to strings or strings mapped to integers.
     """
+
     return _get_libc(known_symbols=known_symbols, buildid=buildid)
 
 
 def query(requested_symbols: List[str],
           known_symbols: Mapping[str, any] = {},
           buildid: str = "") -> Mapping[str, int]:
-    """
-    This function uses the libc.rip api to attempt to find libc symbols based
-    on leaked addresses.
+    """retrieve symbol addresses based on other known symbols or a buildid
 
-    @known_symbols: dict of symbol names (strings) mapped to addresses (strings
-    or integers)
-    @request_symbols: list of requested symbols (strings)
-
-    @returns: a dictionary of requested symbols (strings) mappped to their
-    addresses (int). If things go wrong an exception will be raised
+    Uses the libc.rip api to retrieve the addresses of other known symbols
+    within a given libc. This method can be called with either a buildid or a
+    dictionary of symbols mapped to addresses (or both). The dictionary of
+    symbols is a dictionary of strings mapped to strings or strings mapped to
+    integers. Requested symbols are returned as a dictionary of strings mapped
+    to integers.
     """
+
     # TODO: This method must validate that the requested symbols  exist in the
     #      dictionary.
 
@@ -63,25 +41,22 @@ def query(requested_symbols: List[str],
 
 
 def query_build_id(symbols: Mapping[str, any]) -> str:
-    """
-    This funcion returns the 'id' (libc buildid) value from an API find call
+    """retrieve the buildid of a libc based on symbol addresses
 
-    @symbols: dictionary of symbol names (strings) mapped to addresses (strings
-    or integers)
-
-    @returns: a build ID (string) that can be used too query symbol addresses.
-    If things go wrong this function raises an execption.
+    Uses the libc.rip api to retrieve the buildid of a given libc based on
+    known symbol addresses. Symbols are passed as a dictionary of strings
+    mapped to strings or strings mapped to integers.
     """
+
     return _query("id", symbols=symbols)
 
 
 def query_download_url(symbols: Mapping[str, any], buildid: str = "") -> str:
-    """
-    This funcion returns the 'download_url' value from an API find call
+    """retrieve the download url of a libc based on symbol addresses or buildid
 
-    @symbols: dictionary of symbol names (strings) mapped to addresses (strings
-    or integers)
-
-    @returns: a download url (string) where the libc can be downloaded
+    Uses the libc.rip api to retrieve a download url of a given libc based on
+    symbol addresses. Symbols are passed as a dictionary of strings mapped to
+    integers or strings mapped to strings.
     """
+
     return _query("download_url", symbols=symbols, buildid=buildid)

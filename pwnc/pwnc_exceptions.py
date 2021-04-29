@@ -1,29 +1,22 @@
 class PWNCException(Exception):
-    """
-    Base exception class for pwnc.
-    """
+    """ Base exception class for pwnc. """
+
     pass
 
 
 class PWNCResponseError(PWNCException):
-    """
-    Exception raised for responses that are not expected when received from a
-    urllib3 query.
-    """
+    """ Raised when a urllib3 response is unexpected """
+
     pass
 
 
 class PWNCTypeError(PWNCException):
-    """
-    Exception raised when the type of an object is not compatible with an
-    action
-    """
+    """ Raised when the type of an object is unexpected """
+
     pass
 
 
 class PWNCArgumentError(PWNCException):
-    """
-    Exception when the arguments passed to a method are either the wrong type
-    or no enough arguments are passed.
-    """
+    """ Raised when an arg is the wrong type or too few args were passed """
+
     pass

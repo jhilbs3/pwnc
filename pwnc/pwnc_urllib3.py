@@ -14,14 +14,11 @@ LIBC_RIP_LIBC = "https://libc.rip/api/libc/"
 
 def _get_libc(known_symbols: Mapping[str, any] = {},
               buildid: str = "") -> bytes:
-    """
-    This function will use the libc.rip api to download a libc based on
-    addresses of leaked symbols.
+    """ download a given libc based on symbols or buildid
 
-    @known_symbols: dictionary of symbol names (strings) mapped to their
-    addresses (strings or integers)
-
-    @returns: a libc binary as a string of bytes
+    Uses a dictionary of known symbols mapped to addresses or a buildid
+    (or both). Symbols are strings mapped to strings or strings mapped to
+    integers
     """
 
     # raise an exception if we aren't provided one ofof the arguments
@@ -49,17 +46,13 @@ def _get_libc(known_symbols: Mapping[str, any] = {},
 def _query(desired_value: str,
            symbols: Mapping[str, int] = {},
            buildid: str = "") -> any:
-    """
-    This function querys https://libc.rip/api/find with a dictionary of symbols
-    (strings) mappped to addresses (int). It returns the desired_value from the
-    resulting json object
+    """ retrieve symbol addresses based on symbols or buildid
 
-    @symbols: dictionary of symbol names (strings) mapped to addresses (strings
-    or integers)
-
-    @returns: the values associated with the desired_value key passed to this
-    function
+    Uses known symbol addresses or a buildid to retrieve other symbol
+    addresses. Symbols are a dict of strings mapped to integers or strings
+    mapped to strings.
     """
+
     # raise an exception if we aren't provided one ofof the arguments
     if(len(symbols) == 0 and len(buildid) == 0):
         raise PWNCArgumentError('buildid or symbol required')
@@ -97,16 +90,7 @@ def _query(desired_value: str,
 
 def _query_symbols(desired_symbols: List[str],
                    buildid: str) -> Mapping[str, int]:
-    """
-    This function querys https://libc.rip/api/libc/<buildid> with a list of
-    symbols (strings) and a buildid.
-
-    @desired_symbols: list of strings. Each is a libc symbol
-    @build: string id of the libc to query
-
-    @returns: a dictionary of symbols (strings) mappped to their addresses
-    (integers) If things go wrong an exception will be raised
-    """
+    """ makes the urllib3 call to retrieve symbols """
 
     with urllib3.PoolManager() as http:
 
