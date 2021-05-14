@@ -2,7 +2,6 @@ from typing import Mapping, List, Union
 
 from .pwnc_urllib3 import _get_libc, _query, _query_symbols
 
-
 def get_libc(known_symbols: Mapping[str, Union[str, int]] = {},
              buildid: str = "") -> bytes:
     """download libc by providing known symbols or a buildid
@@ -17,7 +16,7 @@ def get_libc(known_symbols: Mapping[str, Union[str, int]] = {},
 
 def query(requested_symbols: List[str],
           known_symbols: Mapping[str, Union[str, int]] = {},
-          buildid: str = "") -> Mapping[str, int]:
+          libcid: str = "") -> Mapping[str, int]:
     """retrieve symbol addresses based on other known symbols or a buildid
 
     Uses the libc.rip api to retrieve the addresses of other known symbols
@@ -28,12 +27,12 @@ def query(requested_symbols: List[str],
     to integers.
     """
 
-    # get the buildid if needed
-    if(buildid == ""):
-        buildid = query_build_id(known_symbols)
+    # get the libcid if needed
+    if(libcid == ""):
+        libcid = query_libc_id(known_symbols)
 
     # now get the desired symbols based on the buildid
-    return _query_symbols(requested_symbols, buildid)
+    return _query_symbols(requested_symbols, libcid)
 
 
 def query_build_id(symbols: Mapping[str, Union[str, int]]) -> str:
@@ -44,11 +43,20 @@ def query_build_id(symbols: Mapping[str, Union[str, int]]) -> str:
     mapped to strings or strings mapped to integers.
     """
 
+    return _query("buildid", symbols=symbols)
+
+def query_libc_id(symbols: Mapping[str, Union[str, int]]):
+    """retrieve the libcid of a libc based on symbol addresses
+
+    Uses the libc.rip api to retrieve the libcid of a given libc based on known
+    symbol addresses.
+    """
+
     return _query("id", symbols=symbols)
 
 
 def query_download_url(symbols: Mapping[str, Union[str, int]], 
-                       buildid: str = "") -> str:
+                       libcid: str = "") -> str:
     """retrieve the download url of a libc based on symbol addresses or buildid
 
     Uses the libc.rip api to retrieve a download url of a given libc based on
@@ -56,4 +64,4 @@ def query_download_url(symbols: Mapping[str, Union[str, int]],
     integers or strings mapped to strings.
     """
 
-    return _query("download_url", symbols=symbols, buildid=buildid)
+    return _query("download_url", symbols=symbols, libcid=libcid)

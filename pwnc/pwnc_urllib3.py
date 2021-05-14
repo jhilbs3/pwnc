@@ -97,7 +97,7 @@ def _query(desired_value: str,
 
 
 def _query_symbols(desired_symbols: List[str],
-                   buildid: str) -> Mapping[str, int]:
+                   libcid: str) -> Mapping[str, int]:
     """ makes the urllib3 call to retrieve symbols """
 
     with urllib3.PoolManager() as http:
@@ -105,7 +105,7 @@ def _query_symbols(desired_symbols: List[str],
         encoded_body = json.dumps({'symbols': desired_symbols})
         response = http.request(
             'POST',
-            f"{LIBC_RIP_LIBC}{buildid}",
+            f"{LIBC_RIP_LIBC}{libcid}",
             body=encoded_body,
             headers={"Content-Type": "application/json"}
         )
@@ -117,7 +117,8 @@ def _query_symbols(desired_symbols: List[str],
         raise PWNCResponseError(
             f'Bad response from attempted symbol query: {parsed}')
 
-    # make sure all requested symbols exist in discovered_symbols
+    # make sure all requested symbols exist in discovered_symbols. If there are
+    # any missing raise an exception
     for symbol in desired_symbols:
         if(symbol not in discovered_symbols):
             raise PWNCSymbolError(f'Requested symbol {symbol} not found')
