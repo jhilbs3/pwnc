@@ -1,22 +1,46 @@
 # pwnc
 A python library for finding libc offsets based on leaked addresses. 
-It utilizes this projects API https://github.com/niklasb/libc-database
+It utilizes the [libc-database](https://github.com/niklasb/libc-database) API.
 
 ## Installation
-This project will be added as a pip3 module in the future. For now clone the
-repo and move the pwnc/ folder to wherever you are keeping your python modules.
+
+    pip3 install pwnc
 
 ## Usage
-There is currently only one method in this package that is important. First
-create a dictionary that maps symbol names to known address. **addresses must be
-strings**. Create a list of strings, one for each desired symbol.
 
-    import pwnc
-    desired_symbols = ["system", "strcat"]
-    known_symbols = {"strncpy": "0xdb0", "strcat": "0xd800"}
-    results = pwnc.query(desired_symbols, known_symbols)
-    print(f"System = {hex(int(results['system'], 16))}")
-    print(f"Strcat = {hex(int(results['strcat'], 16))}")
+### get\_libc
 
-    $ python3 pwnc_example.py
+Retrieve a libc in the form of a bytestring. Provide known symbol names mapped
+to their addresses in memory. Not all symbol names are stored in the database.
+Checkout [libc-database](https://github.com/niklasb/libc-database) for 
+information on which symbols are stored.
+
+    >>> import pwnc
+    >>> known_addresses = {"strncpy": "0x7fffffff0db0",
+                           "strcat": "0x7fffffffd800"}
+    >>> libc_bytestring = pwnc.get_libc(known_addresses)
+    >>> libc_bytestring[:4]
+    b'\x7fELF'
+    >>> 
+
+### query
+
+This method returns all known symbol offsets for a libc. Provide a dictionary
+of symbol names mapped to their in memory offsets
+
+    >>> import pwnc
+    >>> known_addresses = {"strncpy": "0x7fffffff0db0",
+                           "strcat": "0x7fffffffd800"}
+    >>> symbols = pwnc.query(known_addresses)
+    >>> for sym in symbols.items():
+    ...     print(f"{sym[0]} = {hex(sym[1])}")
+    ...
+    __libc_start_main_ret = 0x21b97
+    dup2 = 0x110ab0
+    printf = 0x64f00
+    puts = 0x80a30
+    read = 0x110180
+    str_bin_sh = 0x1b40fa
+    system = 0x4f4e0
+    write = 0x110250
 

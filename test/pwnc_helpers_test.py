@@ -1,6 +1,6 @@
 import unittest
-import pwnc.pwnc_helpers as pwnc_helpers
-from pwnc.pwnc_exceptions import PWNCTypeError, PWNCArgumentError
+import src.pwnc.pwnc_helpers as pwnc_helpers
+from src.pwnc.pwnc_exceptions import PWNCTypeError, PWNCArgumentError
 
 
 class TestPWNCHelpers(unittest.TestCase):

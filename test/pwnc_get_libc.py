@@ -1,8 +1,7 @@
 import unittest
-import pwnc
-from pwnc import pwnc
-from pwnc.pwnc_exceptions import (PWNCArgumentError,
-                                  PWNCResponseError)
+from src import pwnc
+from src.pwnc.pwnc_exceptions import (PWNCArgumentError,
+                                      PWNCResponseError)
 
 class TestPWNC(unittest.TestCase):
 

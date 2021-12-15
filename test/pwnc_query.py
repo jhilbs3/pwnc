@@ -1,9 +1,8 @@
 import unittest
-import pwnc
-from pwnc import pwnc
-from pwnc.pwnc_exceptions import (PWNCArgumentError,
-                                  PWNCResponseError,
-                                  PWNCSymbolError)
+from src import pwnc
+from src.pwnc.pwnc_exceptions import (PWNCArgumentError,
+                                      PWNCResponseError,
+                                      PWNCSymbolError)
 
 class TestPWNC(unittest.TestCase):
 
@@ -19,8 +18,7 @@ class TestPWNC(unittest.TestCase):
 
     def test_query_valid_symbols(self):
         """ send valid symbols and retrieve a real dictionary of symbols """
-        res = pwnc.query(self.valid_request_symbols, 
-                         known_symbols=self.valid_symbols)
+        res = pwnc.query(self.valid_symbols)
         self.assertTrue(isinstance(res, dict))
 
         # check to make sure all requested symbols were provided
@@ -29,7 +27,7 @@ class TestPWNC(unittest.TestCase):
 
     def test_query_valid_libcid(self):
         """ send a valid buildid and retrieve a real dictionary of symbols """
-        res = pwnc.query(self.valid_request_symbols, libcid=self.valid_libcid)
+        res = pwnc.query(libcid=self.valid_libcid)
         self.assertTrue(isinstance(res, dict))
         
         # check to make sure all requested symbols were provided
@@ -39,8 +37,7 @@ class TestPWNC(unittest.TestCase):
     def test_query_valid_libcid_and_symbols(self):
         """ send valid symbols and libcid for extra verbosity """
         
-        res = pwnc.query(self.valid_request_symbols,
-                         known_symbols=self.valid_symbols, 
+        res = pwnc.query(known_symbols=self.valid_symbols, 
                          libcid=self.valid_libcid)
         self.assertTrue(isinstance(res, dict))
         
@@ -53,7 +50,7 @@ class TestPWNC(unittest.TestCase):
        
         self.assertRaises(PWNCSymbolError,
                           pwnc.query,
-                          self.invalid_request_symbols,
+                          requested_symbols=self.invalid_request_symbols,
                           libcid=self.valid_libcid)
 
     def test_query_invalid_libcid(self):
@@ -61,7 +58,7 @@ class TestPWNC(unittest.TestCase):
 
         self.assertRaises(PWNCResponseError,
                           pwnc.query,
-                          self.valid_request_symbols,
+                          requested_symbols=self.valid_request_symbols,
                           libcid=self.invalid_libcid)
 
 

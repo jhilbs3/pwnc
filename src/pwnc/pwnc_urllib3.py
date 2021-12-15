@@ -6,9 +6,9 @@ import urllib3
 import json
 from typing import Mapping, List, Union
 from .pwnc_exceptions import (PWNCResponseError,
-                             PWNCArgumentError,
-                             PWNCSymbolError)
-from .pwnc_helpers import (_normalize_symbols, 
+                              PWNCArgumentError,
+                              PWNCSymbolError)
+from .pwnc_helpers import (_normalize_symbols,
                            _reverse_normalize_symbols,
                            _check_dictionary_types)
 
@@ -62,7 +62,7 @@ def _query(desired_value: str,
     # raise an exception if we aren't provided one ofof the arguments
     if(len(symbols) == 0 and len(buildid) == 0):
         raise PWNCArgumentError('buildid or symbol required')
-    
+
     _check_dictionary_types(symbols, [str], [str, int])
 
     # make sure the dictionary passed to us is good
