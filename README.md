@@ -6,6 +6,14 @@ It utilizes the [libc-database](https://github.com/niklasb/libc-database) API.
 
     pip3 install pwnc
 
+## Example Usage
+
+The documentation for this project is very light. For example usecases you can
+view my writeups for pwn challenges where I used `pwnc`.
+
+- [Dream Diaries: Chapter 1](https://joe-hilbert.gitbook.io/public-portfolio/content/dream-diaries-chapter-1)
+- [integer\_calc](https://joe-hilbert.gitbook.io/public-portfolio/content/integer_calc)
+
 ## Usage
 
 ### get\_libc
